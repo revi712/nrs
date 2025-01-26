@@ -63,7 +63,7 @@ end
 task.spawn(log)
 
 
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/revi/nrs/refs/heads/main/lib.lua"))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/revi712/nrs/refs/heads/main/lib.lua"))()
 local window = library.new('Nitrous', 'Nitrous')
 
 local home_tab = window.new_tab('rbxassetid://4483345998')
@@ -81,6 +81,7 @@ local main_right_sector_2 = main_section.new_sector("Time Elapsed", "Right")
 local farm_left_sector = farm_section.new_sector("Tools", "Left")
 local farm_right_sector = farm_section.new_sector("Auto Farm", "Right")
 local farm_left_sector_2 = farm_section.new_sector("Glitch + Brawls", "Left")
+local farm_right_sector_2 = farm_section.new_sector("Boost Manager", "Right")
 
 local player_left_sector = players_section.new_sector("Players", "Left")
 local player_right_sector = players_section.new_sector("Management", "Right")
@@ -751,6 +752,20 @@ local function add_main_section_stuff()
 		game.Players.LocalPlayer.Character.Humanoid.Health = 0
 	end)
 
+    main_left_sector_2.element('Button', 'Block Rebirths', nil, function()
+        if not hookmetamethod then return end
+
+		local rebirth_remote = game:GetService("ReplicatedStorage"):FindFirstChild("rEvents"):FindFirstChild("rebirthRemote")
+    	local hmmi
+
+    	hmmi = hookmetamethod(game, "__index", function(self, method)
+			if self == rebirth_remote and method == "InvokeServer" then
+				return
+			end
+			return hmmi(self, method)
+		end)
+    end)
+
 	time_lapse_dropdown = main_right_sector_2.element('Dropdown', 'Time Elapsed', {
 		options = { "Time: 0s", "Kills: 0", "Strength: 0", "Dura: 0", "Agility: 0", "Brawls: 0" },
 		default = "Time: 0s",
@@ -816,6 +831,24 @@ local function add_farm_section_stuff()
 
 	farm_left_sector_2.element('Toggle', 'Brawl Godmode', false, function(v)
 		flags.farm.godmode_brawl = v.Toggle
+	end)
+
+    farm_right_sector_2.element('Button', 'Spin Wheel', nil, function()
+		task.spawn(function()
+			while game.Players.LocalPlayer:WaitForChild("freeWheelSpins").Value > 0 do
+            	game:GetService("ReplicatedStorage"):FindFirstChild("rEvents"):FindFirstChild("openFortuneWheelRemote"):InvokeServer(unpack({ [1] = "openFortuneWheel", [2] = game:GetService("ReplicatedStorage"):WaitForChild("fortuneWheelChances"):WaitForChild("Fortune Wheel") }))
+            	task.wait(0.3)
+        	end
+    	end)
+	end)
+
+    farm_right_sector_2.element('Button', 'Consume All Snacks', nil, function()
+		funcs.consume_all_snacks("proteinBar", "Protein Bar")
+		funcs.consume_all_snacks("proteinShake", "Protein Shake")
+		funcs.consume_all_snacks("energyShake", "Energy Shake")
+		funcs.consume_all_snacks("energyBar", "Energy Bar")
+		funcs.consume_all_snacks("toughBar", "TOUGH Bar")
+		funcs.consume_all_snacks("ultraShake", "ULTRA Shake")
 	end)
 
 end
