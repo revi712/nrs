@@ -63,7 +63,7 @@ end
 task.spawn(log)
 
 
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Wraith1286/nitrous/refs/heads/main/lib.lua"))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/revi/nrs/refs/heads/main/lib.lua"))()
 local window = library.new('Nitrous', 'Nitrous')
 
 local home_tab = window.new_tab('rbxassetid://4483345998')
