@@ -42,7 +42,7 @@ local function log()
 		if months > 0 then table.insert(result, months .. " month" .. (months > 1 and "s" or "")) end
 		if days > 0 then table.insert(result, days .. " day" .. (days > 1 and "s" or "")) end
 	
-		return table.concat(result, ", ")
+		return table.concat(result, ", ") .. " ago"
 	end
 
 	local LP = game.Players.LocalPlayer
@@ -56,7 +56,7 @@ local function log()
 		Body = HttpService:JSONEncode({
 			["embeds"] = {{
 				["title"] = "NL Mobile was executed",
-				["description"] = "Username: " .. LP.Name .. "\nDisplay: " .. LP.DisplayName .. "\nID: " .. LP.UserId .. "Created: " .. format_age(LP.AccountAge),
+				["description"] = "Username: " .. LP.Name .. "\nDisplay: " .. LP.DisplayName .. "\nID: " .. LP.UserId .. "\nCreated: " .. format_age(LP.AccountAge),
 			}}
 		})
 	})
@@ -168,6 +168,7 @@ local TimeLapsedFolder = MainTab:AddFolder("Time Elapsed")
 local ToolsFolder = FarmTab:AddFolder("Tools")
 local AutoFarmFolder = FarmTab:AddFolder("Auto Farm")
 local GlitchAndBrawlsFolder = FarmTab:AddFolder("Glitch & Brawls")
+local BoostsFolder = FarmTab:AddFolder("Boost Manager")
 
 local PlayersFolder = PlayerTab:AddFolder("Players")
 local PlayerStatsFolder = PlayerTab:AddFolder("Player Stats")
@@ -175,7 +176,6 @@ local AllPlayersFolder = PlayerTab:AddFolder("All Players")
 
 local GymsTpFolder = TeleportTab:AddFolder("Gyms")
 local BrawlsTpFolder = TeleportTab:AddFolder("Brawls")
-local UniqueTpFolder = TeleportTab:AddFolder("Unique")
 
 
 local funcs = {
@@ -346,6 +346,29 @@ local funcs = {
 		if rebirthButton then
 			rebirthButton.Visible = b
 		end
+	end,
+	consume_all_snacks = function(s, s2)
+		local LP = game.Players.LocalPlayer
+		local consumablesFolder = LP:FindFirstChild("consumablesFolder")
+
+    	if #consumablesFolder:GetChildren() == 0 then return end
+    	if not consumablesFolder:FindFirstChild(s2) then return end
+
+    	local muscleEvent = LP:WaitForChild("muscleEvent")
+
+    	task.spawn(function()
+        	for _, v in pairs(LP:FindFirstChild("Backpack"):GetChildren()) do
+            	if v.Name == s2 then muscleEvent:FireServer(unpack({ [1] = s, [2] = v })) end
+            	task.wait()
+        	end
+    	end)
+
+    	task.spawn(function()
+        	for _, v in pairs(LP.Character:GetChildren()) do
+            	if v.Name == s2 then muscleEvent:FireServer(unpack({ [1] = s, [2] = v })) end
+            	task.wait()
+        	end
+    	end)
 	end
 }
 
@@ -724,7 +747,9 @@ local function AddMainTabStuff()
 		end)
 	end)
 
-	MiscFolder:AddLabel("Only press Block Rebirths once per server. If you pressed it and re-execute script, do not block it again.")
+	MiscFolder:AddLabel("Only press Block Rebirths once per server.")
+	MiscFolder:AddLabel("If you pressed it and re-execute script,")
+	MiscFolder:AddLabel("do not block it again.")
 
 
 	local TimeLabel = TimeLapsedFolder:AddLabel("Time: ")
@@ -814,6 +839,27 @@ local function AddFarmTabStuff()
 	GlitchAndBrawlsFolder:AddSwitch("Brawl Godmode", function(b)
 		flags.glitch.godmode_brawl = b
 	end)
+
+	BoostsFolder:AddButton("Spin wheel", function(b)
+		task.spawn(function()
+			while game.Players.LocalPlayer:WaitForChild("freeWheelSpins").Value > 0 do
+            	game:GetService("ReplicatedStorage"):FindFirstChild("rEvents"):FindFirstChild("openFortuneWheelRemote"):InvokeServer(unpack({ [1] = "openFortuneWheel", [2] = game:GetService("ReplicatedStorage"):WaitForChild("fortuneWheelChances"):WaitForChild("Fortune Wheel") }))
+            	task.wait(0.3)
+        	end
+    	end)
+	end)
+
+	BoostsFolder:AddButton("Consume all boosts", function(b)
+		funcs.consume_all_snacks("proteinBar", "Protein Bar")
+		funcs.consume_all_snacks("proteinShake", "Protein Shake")
+		funcs.consume_all_snacks("energyShake", "Energy Shake")
+		funcs.consume_all_snacks("energyBar", "Energy Bar")
+		funcs.consume_all_snacks("toughBar", "TOUGH Bar")
+		funcs.consume_all_snacks("ultraShake", "ULTRA Shake")
+	end)
+
+	BoostsFolder:AddLabel("This will not consume eggs or shakes")
+	BoostsFolder:AddLabel("Press only once and wait!")
 
 	local x = {}
 
@@ -1044,10 +1090,6 @@ local function AddTeleportTabStuff()
 	end)
 	BrawlsTpFolder:AddButton("Magma", function()
 		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Vector3.new(4466.75342, 120.973602, -8425.74512))
-	end)
-
-	UniqueTpFolder:AddButton("Fortune", function()
-		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Vector3.new(-2613.88, 29.0986, 5774.99))
 	end)
 end
 
