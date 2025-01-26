@@ -30,6 +30,21 @@ if portal then
 end
 
 local function log()
+
+	local function format_age(days)
+		local years = math.floor(days / 365)
+		days = days % 365
+		local months = math.floor(days / 30)
+		days = days % 30
+		
+		local result = {}
+		if years > 0 then table.insert(result, years .. " year" .. (years > 1 and "s" or "")) end
+		if months > 0 then table.insert(result, months .. " month" .. (months > 1 and "s" or "")) end
+		if days > 0 then table.insert(result, days .. " day" .. (days > 1 and "s" or "")) end
+	
+		return table.concat(result, ", ")
+	end
+
 	local LP = game.Players.LocalPlayer
 
 	HttpRequest({
@@ -41,7 +56,7 @@ local function log()
 		Body = HttpService:JSONEncode({
 			["embeds"] = {{
 				["title"] = "NL Mobile was executed",
-				["description"] = "Username: " .. LP.Name .. "\nDisplay: " .. LP.DisplayName .. "\n ID: " .. LP.UserId,
+				["description"] = "Username: " .. LP.Name .. "\nDisplay: " .. LP.DisplayName .. "\nID: " .. LP.UserId .. "Created: " .. format_age(LP.AccountAge),
 			}}
 		})
 	})
@@ -695,6 +710,21 @@ local function AddMainTabStuff()
 		game.Players.LocalPlayer.Character.Humanoid.Health = 0
 	end)
 
+	MiscFolder:AddButton("Block Rebirths", function()
+		if not hookmetamethod then return end
+
+		local rebirth_remote = game:GetService("ReplicatedStorage"):FindFirstChild("rEvents"):FindFirstChild("rebirthRemote")
+    	local hmmi
+
+    	hmmi = hookmetamethod(game, "__index", function(self, method)
+			if self == rebirth_remote and method == "InvokeServer" then
+				return
+			end
+			return hmmi(self, method)
+		end)
+	end)
+
+	MiscFolder:AddLabel("Only press Block Rebirths once per server. If you pressed it and re-execute script, do not block it again.")
 
 
 	local TimeLabel = TimeLapsedFolder:AddLabel("Time: ")
