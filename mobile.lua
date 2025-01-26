@@ -1219,7 +1219,7 @@ local function kill_players(t)
 
 			local player = game:GetService("Players"):FindFirstChild(v)
 
-			if flags.players.teleport_to_them_in_kills then
+			if (flags.players.teleport_to_them_in_kills and table.find({ "Boxing Ring", "Desert Ring", "Magma Ring" }, player:FindFirstChild("currentMap").Value) ~= nil) then
 				if player and player.Character then
 					local player_char = player.Character
 					if player_char and player_char:FindFirstChild("Humanoid") and player_char.Humanoid.Health > 0 then
