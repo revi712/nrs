@@ -410,7 +410,7 @@ local flags = {
 		enable_fast_kills = true,
 		kill_everyone = false,
 		karma_priority = "None",
-		disrupt_brawl_users = false
+		teleport_to_them_in_kills = false
 	},
 	connections = {
 		anti_knock = nil,
@@ -981,8 +981,8 @@ local function AddPlayerTabStuff()
 		flags.players.enable_fast_kills = b
 	end)
 
-	local BrawlDisruptSwitch = AllPlayersFolder:AddSwitch("Disrupt Brawl Campers (attempt)", function(b)
-		flags.players.disrupt_brawl_users = b
+	local BrawlDisruptSwitch = AllPlayersFolder:AddSwitch("Teleport To Them (only works in custom kills)", function(b)
+		flags.players.teleport_to_them_in_kills = b
 	end)
 
 	FastKillSwitch:Set(true)
@@ -1219,26 +1219,28 @@ local function kill_players(t)
 
 			local player = game:GetService("Players"):FindFirstChild(v)
 
-			if player and player.Character then
-				local player_char = player.Character
-				if player_char and player_char:FindFirstChild("Humanoid") and player_char.Humanoid.Health > 0 then
-					funcs.equip_tool("Punch")
-					if table.find({ "Desert Ring ", "Magma Ring", "Boxing Ring" }, player:FindFirstChild("currentMap").Value) ~= nil and flags.players.disrupt_brawl_users then
-						task.spawn(function()
-							for i = 1, 100 do
-								task.wait(0.1)
-								player_char.HumanoidRootPart.CFrame = left_hand.CFrame
-							end
-						end)
+			if flags.players.teleport_to_them_in_kills then
+				if player and player.Character then
+					local player_char = player.Character
+					if player_char and player_char:FindFirstChild("Humanoid") and player_char.Humanoid.Health > 0 then
+						self_char.HumanoidRootPart.CFrame = player_char.HumanoidRootPart.CFrame
 					end
-					firetouchinterest(left_hand, player_char.Head, 0)
-					firetouchinterest(right_hand, player_char.Head, 0)
-					muscle_event:FireServer(unpack({ [1] = "punch", [2] = "leftHand"}))
-					muscle_event:FireServer(unpack({ [1] = "punch", [2] = "rightHand"}))
-					firetouchinterest(left_hand, player_char.Head, 1)
-					firetouchinterest(right_hand, player_char.Head, 1)
+				end
+			else
+				if player and player.Character then
+					local player_char = player.Character
+					if player_char and player_char:FindFirstChild("Humanoid") and player_char.Humanoid.Health > 0 then
+						funcs.equip_tool("Punch")
+						firetouchinterest(left_hand, player_char.Head, 0)
+						firetouchinterest(right_hand, player_char.Head, 0)
+						muscle_event:FireServer(unpack({ [1] = "punch", [2] = "leftHand"}))
+						muscle_event:FireServer(unpack({ [1] = "punch", [2] = "rightHand"}))
+						firetouchinterest(left_hand, player_char.Head, 1)
+						firetouchinterest(right_hand, player_char.Head, 1)
+					end
 				end
 			end
+			
 		end
 	end
 end
