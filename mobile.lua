@@ -359,14 +359,14 @@ local funcs = {
     	task.spawn(function()
         	for _, v in pairs(LP:FindFirstChild("Backpack"):GetChildren()) do
             	if v.Name == s2 then muscleEvent:FireServer(unpack({ [1] = s, [2] = v })) end
-            	task.wait()
+            	task.wait(0.1)
         	end
     	end)
 
     	task.spawn(function()
         	for _, v in pairs(LP.Character:GetChildren()) do
             	if v.Name == s2 then muscleEvent:FireServer(unpack({ [1] = s, [2] = v })) end
-            	task.wait()
+            	task.wait(0.1)
         	end
     	end)
 	end
@@ -409,7 +409,8 @@ local flags = {
 		kill_list = {},
 		enable_fast_kills = true,
 		kill_everyone = false,
-		karma_priority = "None"
+		karma_priority = "None",
+		disrupt_brawl_users = false
 	},
 	connections = {
 		anti_knock = nil,
@@ -748,8 +749,7 @@ local function AddMainTabStuff()
 	end)
 
 	MiscFolder:AddLabel("Only press Block Rebirths once per server.")
-	MiscFolder:AddLabel("If you pressed it and re-execute script,")
-	MiscFolder:AddLabel("do not block it again.")
+	MiscFolder:AddLabel("If you pressed it and re-execute script, do not block it again.")
 
 
 	local TimeLabel = TimeLapsedFolder:AddLabel("Time: ")
@@ -858,8 +858,7 @@ local function AddFarmTabStuff()
 		funcs.consume_all_snacks("ultraShake", "ULTRA Shake")
 	end)
 
-	BoostsFolder:AddLabel("This will not consume eggs or shakes")
-	BoostsFolder:AddLabel("Press only once and wait!")
+	BoostsFolder:AddLabel("This will not consume Protein Eggs or Tropical Shakes")
 
 	local x = {}
 
@@ -980,6 +979,10 @@ local function AddPlayerTabStuff()
 
 	local FastKillSwitch = AllPlayersFolder:AddSwitch("Enable Fast Kills", function(b)
 		flags.players.enable_fast_kills = b
+	end)
+
+	local BrawlDisruptSwitch = AllPlayersFolder:AddSwitch("Disrupt Brawl Campers (attempt)", function(b)
+		flags.players.disrupt_brawl_users = b
 	end)
 
 	FastKillSwitch:Set(true)
@@ -1220,6 +1223,14 @@ local function kill_players(t)
 				local player_char = player.Character
 				if player_char and player_char:FindFirstChild("Humanoid") and player_char.Humanoid.Health > 0 then
 					funcs.equip_tool("Punch")
+					if table.find({ "Desert Ring ", "Magma Ring", "Boxing Ring" }, player:FindFirstChild("currentMap").Value) ~= nil and flags.players.disrupt_brawl_users then
+						task.spawn(function()
+							for i = 1, 100 do
+								task.wait(0.1)
+								player_char.HumanoidRootPart.CFrame = left_hand.CFrame
+							end
+						end)
+					end
 					firetouchinterest(left_hand, player_char.Head, 0)
 					firetouchinterest(right_hand, player_char.Head, 0)
 					muscle_event:FireServer(unpack({ [1] = "punch", [2] = "leftHand"}))
